@@ -4,7 +4,7 @@
 pub mod types {
 
   pub struct MacAddress {
-    address: [u8; 6],
+    pub address: [u8; 6],
   }
 
   impl MacAddress {
@@ -47,7 +47,7 @@ pub mod types {
   }
 
   pub struct IPv4Address {
-    address: [u8; 4],
+    pub address: [u8; 4],
   }
 
   impl IPv4Address {
@@ -81,7 +81,7 @@ pub mod types {
   }
 
   pub struct IPv6Address {
-    address: [u8; 16],
+    pub address: [u8; 16],
   }
 
   impl IPv6Address {
@@ -135,7 +135,7 @@ pub mod types {
 
   /// Represents types that may populate the EtherType field in an Ethernet header
   pub struct EtherType {
-    value: u16,
+    pub value: u16,
   }
 
   impl EtherType {
@@ -171,7 +171,7 @@ pub mod types {
   /// Represents a protocol type that may be listed in the protocol/next_header field of
   /// an IPv4/IPv6 header
   pub struct IPProtocolType {
-    value: u8,
+    pub value: u8,
   }
 
   impl IPProtocolType {
@@ -201,10 +201,10 @@ pub mod frames {
   use super::types::{EtherType, IPProtocolType, IPv4Address, IPv6Address, MacAddress};
 
   pub struct EthernetFrame<'p> {
-    dst_mac: MacAddress,
-    src_mac: MacAddress,
-    eth_type: EtherType,
-    payload: &'p [u8],
+    pub dst_mac: MacAddress,
+    pub src_mac: MacAddress,
+    pub eth_type: EtherType,
+    pub payload: &'p [u8],
   }
 
   impl<'p> EthernetFrame<'p> {
@@ -240,21 +240,21 @@ pub mod frames {
   }
 
   pub struct IPv4Frame<'o, 'p> {
-    version: u8,
-    header_length: u8,
-    dscp: u8,
-    ecn: u8,
-    total_length: u16,
-    identification: u16,
-    flags: u8,
-    fragment_offset: u16,
-    time_to_live: u8,
-    protocol: IPProtocolType,
-    header_checksum: u16,
-    src_address: IPv4Address,
-    dst_address: IPv4Address,
-    options: &'o [u8],
-    payload: &'p [u8],
+    pub version: u8,
+    pub header_length: u8,
+    pub dscp: u8,
+    pub ecn: u8,
+    pub total_length: u16,
+    pub identification: u16,
+    pub flags: u8,
+    pub fragment_offset: u16,
+    pub time_to_live: u8,
+    pub protocol: IPProtocolType,
+    pub header_checksum: u16,
+    pub src_address: IPv4Address,
+    pub dst_address: IPv4Address,
+    pub options: &'o [u8],
+    pub payload: &'p [u8],
   }
 
   impl<'o, 'p> IPv4Frame<'o, 'p> {
@@ -303,15 +303,15 @@ pub mod frames {
   }
 
   pub struct IPv6Frame<'p> {
-    version: u8,
-    traffic_class: u8,
-    flow_label: u32,
-    payload_length: u16,
-    next_header: IPProtocolType,
-    hop_limit: u8,
-    src_address: IPv6Address,
-    dst_address: IPv6Address,
-    payload: &'p [u8],
+    pub version: u8,
+    pub traffic_class: u8,
+    pub flow_label: u32,
+    pub payload_length: u16,
+    pub next_header: IPProtocolType,
+    pub hop_limit: u8,
+    pub src_address: IPv6Address,
+    pub dst_address: IPv6Address,
+    pub payload: &'p [u8],
   }
 
   impl<'p> IPv6Frame<'p> {
@@ -358,11 +358,11 @@ pub mod frames {
   }
 
   pub struct UDPFrame<'p> {
-    src_port: u16,
-    dst_port: u16,
-    length: u16,
-    checksum: u16,
-    payload: &'p [u8],
+    pub src_port: u16,
+    pub dst_port: u16,
+    pub length: u16,
+    pub checksum: u16,
+    pub payload: &'p [u8],
   }
 
   impl<'p> UDPFrame<'p> {
