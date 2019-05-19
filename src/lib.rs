@@ -175,7 +175,7 @@ pub mod types {
   }
 
   impl IPProtocolType {
-    /// Procues a new IPProtocolType
+    /// Produces a new IPProtocolType
     pub fn new(bytes: [u8; 1]) -> IPProtocolType {
       IPProtocolType {
         value: u8::from_be_bytes([bytes[0]]),
@@ -195,10 +195,33 @@ pub mod types {
       }
     }
   }
+
+  /// Represents a TCP/UDP port
+  pub struct TCPUDPPort {
+    pub value: u16,
+  }
+
+  impl TCPUDPPort {
+    /// Produces a new TCPUDPPort
+    pub fn new(bytes: [u8; 2]) -> TCPUDPPort {
+      TCPUDPPort {
+        value: u16::from_be_bytes([bytes[0], bytes[1]]),
+      }
+    }
+
+    /// Returns the string representation of a TCPUDPPort
+    pub fn as_string(&self) -> String {
+      match self.value {
+        53 => String::from("DNS"),
+        137 => String::from("NBT"),
+        _ => format!("{:02}", self.value),
+      }
+    }
+  }
 }
 
 pub mod frames {
-  use super::types::{EtherType, IPProtocolType, IPv4Address, IPv6Address, MacAddress};
+  use super::types::{EtherType, IPProtocolType, IPv4Address, IPv6Address, MacAddress, TCPUDPPort};
 
   pub struct EthernetFrame<'p> {
     pub dst_mac: MacAddress,
@@ -288,11 +311,10 @@ pub mod frames {
     /// Returns the string representation of an IPv4Frame
     pub fn as_string(&self) -> String {
       format!(
-        "IPv4: [{}] [{} -> {}] [options: {}]",
+        "IPv4: [{}] [{} -> {}]",
         self.protocol.as_string(),
         self.src_address.as_string(),
-        self.dst_address.as_string(),
-        self.options.len()
+        self.dst_address.as_string()
       )
     }
 
@@ -363,8 +385,8 @@ pub mod frames {
   }
 
   pub struct UDPFrame<'p> {
-    pub src_port: u16,
-    pub dst_port: u16,
+    pub src_port: TCPUDPPort,
+    pub dst_port: TCPUDPPort,
     pub length: u16,
     pub checksum: u16,
     pub payload: &'p [u8],
@@ -374,8 +396,8 @@ pub mod frames {
     /// Produces a new UDPFrame
     pub fn new(bytes: &[u8]) -> UDPFrame {
       UDPFrame {
-        src_port: u16::from_be_bytes([bytes[0], bytes[1]]),
-        dst_port: u16::from_be_bytes([bytes[2], bytes[3]]),
+        src_port: TCPUDPPort::new([bytes[0], bytes[1]]),
+        dst_port: TCPUDPPort::new([bytes[2], bytes[3]]),
         length: u16::from_be_bytes([bytes[4], bytes[5]]),
         checksum: u16::from_be_bytes([bytes[6], bytes[7]]),
         payload: &bytes[8..],
@@ -386,7 +408,9 @@ pub mod frames {
     pub fn as_string(&self) -> String {
       format!(
         "UDP: [{}] [{} -> {}]",
-        self.length, self.src_port, self.dst_port
+        self.length,
+        self.src_port.as_string(),
+        self.dst_port.as_string()
       )
     }
   }
