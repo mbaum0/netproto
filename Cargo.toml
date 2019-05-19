@@ -1,0 +1,7 @@
+[package]
+name = "netproto"
+version = "0.1.0"
+authors = ["Michael Baumgarten <mb2732@rit.edu>"]
+edition = "2018"
+
+[dependencies]
