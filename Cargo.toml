@@ -1,10 +1,14 @@
 [package]
 name = "netproto"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["Michael Baumgarten <mb2732@rit.edu>"]
 edition = "2018"
 
 description = "library used for mapping network packets into usable structs"
+repository = "https://github.com/mbaum0193/netproto"
+
+categories = ["Network Programming"]
+
 license = "MIT"
 
 [dependencies]
