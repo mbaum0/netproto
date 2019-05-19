@@ -261,6 +261,10 @@ pub mod frames {
     /// Produces a new IPv4Frame
     pub fn new(bytes: &[u8]) -> IPv4Frame {
       let options_index = (usize::from_be_bytes([0, 0, 0, 0, 0, 0, 0, bytes[0] & 0x0F]) - 5) * 4;
+      let mut payload_index = 20;
+      if options_index > 0 {
+        payload_index = 21;
+      }
 
       IPv4Frame {
         version: u8::from_be_bytes([bytes[0] & 0xF0]),
@@ -277,17 +281,18 @@ pub mod frames {
         src_address: IPv4Address::new([bytes[12], bytes[13], bytes[14], bytes[15]]),
         dst_address: IPv4Address::new([bytes[16], bytes[17], bytes[18], bytes[19]]),
         options: &bytes[20..20 + options_index],
-        payload: &bytes[21 + options_index..],
+        payload: &bytes[payload_index + options_index..],
       }
     }
 
     /// Returns the string representation of an IPv4Frame
     pub fn as_string(&self) -> String {
       format!(
-        "IPv4: [{}] [{} -> {}]",
+        "IPv4: [{}] [{} -> {}] [options: {}]",
         self.protocol.as_string(),
         self.src_address.as_string(),
-        self.dst_address.as_string()
+        self.dst_address.as_string(),
+        self.options.len()
       )
     }
 
