@@ -31,7 +31,7 @@ pub mod types {
       &self.address
     }
 
-    /// Returns a MacAddress's value as a u64 
+    /// Returns a MacAddress's value as a u64
     pub fn as_u64(&self) -> u64 {
       u64::from_be_bytes([
         0,
@@ -168,7 +168,7 @@ pub mod types {
     }
   }
 
-  /// Represents a protocol type that may be listed in the protocol/next_header field of 
+  /// Represents a protocol type that may be listed in the protocol/next_header field of
   /// an IPv4/IPv6 header
   pub struct IPProtocolType {
     value: u8,
@@ -254,7 +254,7 @@ pub mod frames {
     src_address: IPv4Address,
     dst_address: IPv4Address,
     options: &'o [u8],
-    payload: &'p [u8]
+    payload: &'p [u8],
   }
 
   impl<'o, 'p> IPv4Frame<'o, 'p> {
@@ -277,7 +277,7 @@ pub mod frames {
         src_address: IPv4Address::new([bytes[12], bytes[13], bytes[14], bytes[15]]),
         dst_address: IPv4Address::new([bytes[16], bytes[17], bytes[18], bytes[19]]),
         options: &bytes[20..20 + options_index],
-        payload: &bytes[21 + options_index..]
+        payload: &bytes[21 + options_index..],
       }
     }
 
@@ -311,7 +311,7 @@ pub mod frames {
     hop_limit: u8,
     src_address: IPv6Address,
     dst_address: IPv6Address,
-    payload: &'p [u8]
+    payload: &'p [u8],
   }
 
   impl<'p> IPv6Frame<'p> {
@@ -332,7 +332,7 @@ pub mod frames {
           bytes[24], bytes[25], bytes[26], bytes[27], bytes[28], bytes[29], bytes[30], bytes[31],
           bytes[32], bytes[33], bytes[34], bytes[35], bytes[36], bytes[37], bytes[38], bytes[39],
         ]),
-        payload: &bytes[40..]
+        payload: &bytes[40..],
       }
     }
 
@@ -354,6 +354,35 @@ pub mod frames {
     /// Returns the payload contained in an IPv6Frame
     pub fn payload(&self) -> &[u8] {
       self.payload
+    }
+  }
+
+  pub struct UDPFrame<'p> {
+    src_port: u16,
+    dst_port: u16,
+    length: u16,
+    checksum: u16,
+    payload: &'p [u8],
+  }
+
+  impl<'p> UDPFrame<'p> {
+    /// Produces a new UDPFrame
+    pub fn new(bytes: &[u8]) -> UDPFrame {
+      UDPFrame {
+        src_port: u16::from_be_bytes([bytes[0], bytes[1]]),
+        dst_port: u16::from_be_bytes([bytes[2], bytes[3]]),
+        length: u16::from_be_bytes([bytes[4], bytes[5]]),
+        checksum: u16::from_be_bytes([bytes[6], bytes[7]]),
+        payload: &bytes[8..],
+      }
+    }
+
+    /// Returns the string representation of a UDP frame
+    pub fn as_string(&self) -> String {
+      format!(
+        "UDP: [{}] [{} -> {}]",
+        self.length, self.src_port, self.dst_port
+      )
     }
   }
 }
