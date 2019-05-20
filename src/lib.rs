@@ -304,7 +304,7 @@ pub mod frames {
         src_address: IPv4Address::new([bytes[12], bytes[13], bytes[14], bytes[15]]),
         dst_address: IPv4Address::new([bytes[16], bytes[17], bytes[18], bytes[19]]),
         options: &bytes[20..20 + options_index],
-        payload: &bytes[payload_index + options_index..],
+        payload: &bytes[payload_index + options_index..]
       }
     }
 
@@ -409,6 +409,57 @@ pub mod frames {
       format!(
         "UDP: [{}] [{} -> {}]",
         self.length,
+        self.src_port.as_string(),
+        self.dst_port.as_string()
+      )
+    }
+  }
+
+  pub struct TCPFrame<'o, 'p> {
+    pub src_port: TCPUDPPort,
+    pub dst_port: TCPUDPPort,
+    pub seq_number: u32,
+    pub ack_number: u32,
+    pub data_offset: u8,
+    pub reserved: u8,
+    pub flags: u16,
+    pub window_size: u16,
+    pub checksum: u16,
+    pub urgent_pointer: u16,
+    pub options: &'o [u8],
+    pub payload: &'p [u8]
+  }
+
+  impl<'o, 'p> TCPFrame<'o, 'p> {
+    /// Produces a new TCPFrame
+    pub fn new(bytes: &[u8]) -> TCPFrame {
+      let options_index = (usize::from_be_bytes([0, 0, 0, 0, 0, 0, 0, bytes[12] & 0xF0]) -5) * 4;
+      let mut payload_index = 20;
+      if options_index > 0 {
+        payload_index = 21;
+      }
+
+      TCPFrame {
+        src_port: TCPUDPPort::new([bytes[0], bytes[1]]),
+        dst_port: TCPUDPPort::new([bytes[2], bytes[3]]),
+        seq_number: u32::from_be_bytes([bytes[4], bytes[5], bytes[6], bytes[7]]),
+        ack_number: u32::from_be_bytes([bytes[8], bytes[9], bytes[10], bytes[11]]),
+        data_offset: u8::from_be_bytes([bytes[12] & 0xF0]),
+        reserved: u8::from_be_bytes([bytes[12] & 0x0E]),
+        flags: u16::from_be_bytes([(bytes[12] & 0x01), bytes[13]]),
+        window_size: u16::from_be_bytes([bytes[14], bytes[15]]),
+        checksum: u16::from_be_bytes([bytes[16], bytes[17]]),
+        urgent_pointer: u16::from_be_bytes([bytes[18], bytes[19]]),
+        options: &bytes[20..20 + options_index],
+        payload: &bytes[payload_index + options_index..]
+      }
+    }
+
+    /// Returns the string representation of a TCP frame
+    pub fn as_string(&self) -> String {
+      format!(
+        "TCP: [{}] [{} -> {}]",
+        self.data_offset,
         self.src_port.as_string(),
         self.dst_port.as_string()
       )
