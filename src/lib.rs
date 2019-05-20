@@ -1,6 +1,9 @@
 //! # Networking
 //!
 //! A library for modeling networking protocols
+
+use std::str;
+
 pub mod types {
 
   pub struct MacAddress {
@@ -218,6 +221,28 @@ pub mod types {
       }
     }
   }
+
+  /// Represents a DNS question
+  pub struct DNSQuestion<'n> {
+    pub q_name_length: u8,
+    pub q_name: &'n [u8],
+    pub q_type: u16,
+    pub q_class: u16
+  }
+
+  impl<'n> DNSQuestion<'n> {
+    /// Produces a new DNSQuestion
+    pub fn new(bytes: &[u8]) -> DNSQuestion {
+      let q_name_length = usize::from_be_bytes([0, 0, 0, 0, 0, 0, 0, bytes[0]]);
+
+      DNSQuestion {
+        q_name_length: u8::from_be_bytes([bytes[0]]),
+        q_name: &bytes[1..1 + q_name_length],
+        q_type: u16::from_be_bytes([bytes[2 + q_name_length], bytes[3 + q_name_length]]),
+        q_class: u16::from_be_bytes([bytes[4 + q_name_length], bytes[5 + q_name_length]])
+      }
+    }
+  }
 }
 
 pub mod frames {
@@ -411,6 +436,43 @@ pub mod frames {
         self.length,
         self.src_port.as_string(),
         self.dst_port.as_string()
+      )
+    }
+  }
+
+  pub struct DNSFrame {
+    pub id: u16,
+    pub qr: u8,
+    pub opcode: u8,
+    pub flags: u8,
+    pub zero: u8,
+    pub response_code: u8,
+    pub question_count: u16,
+    pub answer_count: u16,
+    pub authority_record_count: u16,
+    pub additional_record_count: u16,
+  }
+
+  impl DNSFrame {
+    /// Produces a new DNSFrame
+    pub fn new(bytes: &[u8]) -> DNSFrame {
+      DNSFrame {
+        id: u16::from_be_bytes([bytes[0], bytes[1]]),
+        qr: u8::from_be_bytes([bytes[2] & 0x80]),
+        opcode: u8::from_be_bytes([bytes[2] & 0x78]),
+        flags: u8::from_be_bytes([bytes[2] & 0x07 | bytes[3] & 0x80]),
+        zero: u8::from_be_bytes([bytes[3] & 0x70]),
+        response_code: u8::from_be_bytes([bytes[3] & 0x0F]),
+        question_count: u16::from_be_bytes([bytes[4], bytes[5]]),
+        answer_count: u16::from_be_bytes([bytes[6], bytes[7]]),
+        authority_record_count: u16::from_be_bytes([bytes[8], bytes[9]]),
+        additional_record_count: u16::from_be_bytes([bytes[10], bytes[11]]),
+      }
+    }
+
+    pub fn as_string(&self) -> String {
+      format!(
+        "DNS: [id: {}]"
       )
     }
   }
